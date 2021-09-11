@@ -15,10 +15,10 @@ Year: 2018
 ## Screen shot
 ### Homescreen
 <br>
-<img src="demo/1.png" alt="HomeScreen" width="800"/>
+<img src="demo/1.png" alt="HomeScreen" width="400"/>
 
 <br>
-<img src="demo/2.png" alt="Instruction Page" width="800"/>
+<img src="demo/2.png" alt="Instruction Page" width="400"/>
 
 
 ## Authors
