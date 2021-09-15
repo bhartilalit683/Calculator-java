@@ -5,7 +5,7 @@ A simple calculator app in java. This project was made in 2018 when I started le
 ## Project description
 Name: Calculator <br>
 Programming Language: Java <br>
-GUI: javaSwing
+GUI: javaSwing <br>
 Project No: 7 <br>
 Year: 2018
 
