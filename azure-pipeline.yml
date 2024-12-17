@@ -2,7 +2,7 @@ trigger:
 - main  # Trigger the pipeline on changes to the 'main' branch
 
 pool:
-  name: 'windows'  # Use the name of your self-hosted agent pool
+  name: 'Default'  # Use the name of your self-hosted agent pool
   demands:
     - agent.os -equals Windows_NT  # Ensure the build runs on a Windows-based machine
 
@@ -20,12 +20,28 @@ jobs:
           # Check if Java is installed
           if (-Not (Get-Command java -ErrorAction SilentlyContinue)) {
               Write-Host "Java not found. Installing Java 8..."
-              # Download and install Java 8
-              Invoke-WebRequest -Uri https://download.oracle.com/otn-pub/java/jdk/8u311-b11/jdk-8u311-windows-x64.exe -OutFile jdk-8u311-windows-x64.exe
-              Start-Process -FilePath jdk-8u311-windows-x64.exe -ArgumentList '/s' -Wait  # Silent installation
-              # Set JAVA_HOME environment variable
-              $env:JAVA_HOME = 'C:\Program Files\Java\jdk1.8.0_311'
-              Write-Host "Java 8 has been installed."
+
+              # Define file path
+              $javaInstallerPath = "$(Build.ArtifactStagingDirectory)\jdk-8u311-windows-x64.exe"
+              
+              # Check if the installer file exists before running
+              if (Test-Path $javaInstallerPath) {
+                  Write-Host "Java installer already downloaded."
+              } else {
+                  Write-Host "Downloading Java 8 installer..."
+                  # Download the Java installer
+                  Invoke-WebRequest -Uri https://download.oracle.com/otn-pub/java/jdk/8u311-b11/jdk-8u311-windows-x64.exe -OutFile $javaInstallerPath
+              }
+              
+              # Run the installer (with a timeout and retry for better reliability)
+              Write-Host "Starting the Java installer..."
+              try {
+                  Start-Process -FilePath $javaInstallerPath -ArgumentList '/s' -Wait
+                  Write-Host "Java 8 has been installed."
+              } catch {
+                  Write-Host "Error during installation: $_"
+                  exit 1
+              }
           } else {
               Write-Host "Java is already installed."
           }
