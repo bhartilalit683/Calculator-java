@@ -2,7 +2,7 @@ trigger:
 - main  # Trigger the pipeline on changes to the 'main' branch
 
 pool:
-  name: 'Default'  # Use the name of your self-hosted agent pool
+  name: 'windows'  # Use the name of your self-hosted agent pool
   demands:
     - agent.os -equals Windows_NT  # Ensure the build runs on a Windows-based machine
 
