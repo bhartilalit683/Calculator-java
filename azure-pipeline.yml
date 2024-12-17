@@ -12,52 +12,7 @@ jobs:
 
     # Step 1: Install Java 8 if it's not installed
     - task: PowerShell@2
-      displayName: 'Install Java 8 if not installed'
-      inputs:
-        targetType: 'inline'
-        script: |
-          Write-Host "Checking if Java is installed..."
-          # Check if Java is installed
-          if (-Not (Get-Command java -ErrorAction SilentlyContinue)) {
-              Write-Host "Java not found. Installing Java 8..."
-
-              # Define file path
-              $javaInstallerPath = "$(Build.ArtifactStagingDirectory)\jdk-8u311-windows-x64.exe"
-              
-              # Check if the installer file exists before running
-              if (Test-Path $javaInstallerPath) {
-                  Write-Host "Java installer already downloaded."
-              } else {
-                  Write-Host "Downloading Java 8 installer..."
-                  # Download the Java installer
-                  Invoke-WebRequest -Uri https://download.oracle.com/otn-pub/java/jdk/8u311-b11/jdk-8u311-windows-x64.exe -OutFile $javaInstallerPath
-              }
-              
-              # Run the installer (with a timeout and retry for better reliability)
-              Write-Host "Starting the Java installer..."
-              try {
-                  Start-Process -FilePath $javaInstallerPath -ArgumentList '/s' -Wait
-                  Write-Host "Java 8 has been installed."
-              } catch {
-                  Write-Host "Error during installation: $_"
-                  exit 1
-              }
-          } else {
-              Write-Host "Java is already installed."
-          }
-
-    # Step 2: Set JAVA_HOME and update PATH
-    - task: PowerShell@2
-      displayName: 'Set JAVA_HOME and update PATH'
-      inputs:
-        targetType: 'inline'
-        script: |
-          Write-Host "Setting JAVA_HOME and updating PATH..."
-          $env:JAVA_HOME = 'C:\Program Files\Java\jdk1.8.0_311'
-          [System.Environment]::SetEnvironmentVariable('JAVA_HOME', $env:JAVA_HOME, [System.EnvironmentVariableTarget]::Machine)
-          $env:PATH = $env:JAVA_HOME + '\bin;' + $env:PATH
-          [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH, [System.EnvironmentVariableTarget]::Machine)
-
+     
     # Step 3: Verify Java installation
     - task: PowerShell@2
       displayName: 'Check Java Installation'
