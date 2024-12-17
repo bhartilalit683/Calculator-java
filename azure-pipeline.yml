@@ -1,0 +1,70 @@
+trigger:
+- main  # Trigger the pipeline on changes to the 'main' branch
+
+pool:
+  name: 'windows'  # Use the name of your self-hosted agent pool
+  demands:
+    - agent.os -equals Windows_NT  # Ensure the build runs on a Windows-based machine
+
+jobs:
+- job: Build_and_Deploy
+  steps:
+
+    # Step 1: Install Java 8 if it's not installed
+    - script: |
+        echo "Checking if Java is installed..."
+        # Check if Java is installed
+        if (-Not (Get-Command java -ErrorAction SilentlyContinue)) {
+            echo "Java not found. Installing Java 8..."
+            # Download and install Java 8
+            Invoke-WebRequest -Uri https://download.oracle.com/otn-pub/java/jdk/8u311-b11/jdk-8u311-windows-x64.exe -OutFile jdk-8u311-windows-x64.exe
+            Start-Process -FilePath jdk-8u311-windows-x64.exe -ArgumentList '/s' -Wait  # Silent installation
+            # Set JAVA_HOME environment variable
+            $env:JAVA_HOME = 'C:\Program Files\Java\jdk1.8.0_311'
+            echo "Java 8 has been installed."
+        } else {
+            echo "Java is already installed."
+        }
+      displayName: 'Install Java 8 if not installed'
+
+    # Step 2: Set JAVA_HOME and PATH environment variables (if not set)
+    - script: |
+        echo "Setting JAVA_HOME and updating PATH..."
+        $env:JAVA_HOME = 'C:\Program Files\Java\jdk1.8.0_311'
+        [System.Environment]::SetEnvironmentVariable('JAVA_HOME', $env:JAVA_HOME, [System.EnvironmentVariableTarget]::Machine)
+        $env:PATH = $env:JAVA_HOME + '\bin;' + $env:PATH
+        [System.Environment]::SetEnvironmentVariable('PATH', $env:PATH, [System.EnvironmentVariableTarget]::Machine)
+      displayName: 'Set JAVA_HOME and PATH'
+
+    # Step 3: Verify Java installation
+    - script: |
+        java -version  # Verify Java version
+        javac -version  # Verify javac version
+      displayName: 'Check Java Installation'
+
+    # Step 4: Compile Java code
+    - script: |
+        echo "Compiling Java code..."
+        # Compile Java source code located in 'src' folder
+        javac -d $(Build.SourcesDirectory)/bin src/**/*.java
+      displayName: 'Compile Java Code'
+
+    # Step 5: Run the Java application (assuming 'Calculator' is the main class)
+    - script: |
+        echo "Running the Java application..."
+        # Run Java application (replace 'Calculator' with your main class)
+        java -cp $(Build.SourcesDirectory)/bin Calculator
+      displayName: 'Run Java Application'
+
+    # Optional Step 6: Copy compiled files to staging directory
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(Build.SourcesDirectory)/bin'  # Path to compiled files
+        Contents: '**/*.class'  # Include all .class files
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'  # Staging directory for artifacts
+
+    # Optional Step 7: Publish build artifacts (if needed)
+    - task: PublishBuildArtifacts@1
+      inputs:
+        artifactName: 'drop'  # Name of the artifact
+        targetPath: '$(Build.ArtifactStagingDirectory)'  # Path to the compiled .class files
